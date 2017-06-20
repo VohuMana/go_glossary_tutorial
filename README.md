@@ -23,6 +23,12 @@ Every Monday at 1900 (7:00PM) PST until the project is complete.
 
 **Result:** A program that can get JSON from the dictionary API and print it to the screen.
 
+**Session 1.5:** Dictionary server was down so we made a weather API using OpenWeatherMap
+- Used my [goapi](https://github.com/VohuMana/goapi) tool to generate the structs to parse JSON returned from Open Weather Map
+- Created a command line program to make a call to OpenWeatherMap with our given lat and lon
+
+**Result** A program that accepts a lattitude, longitude, and perfered tempature unit and returns the weather for that location.
+
 **Session 2:** Parsing the response and abstracting our dictionary
 - Use the Go standard library to parse JSON
 - Create structs to parse the Pearson API
