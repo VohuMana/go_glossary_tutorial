@@ -3,30 +3,56 @@ package main
 import (
 	"fmt"
 	"log"
-	"flag"
+	"net/http"
+	"io/ioutil"
+	"strings"
+	"encoding/json"
+	"html"
 )
 
 func main() {
-	fmt.Println("Hello LiveEdu! :D")
-
-	var (
-		wordToDefine = flag.String("word", "ace", "Enter the word you would like to define.")
-	)
-	flag.Parse()
-
 	var dictionaryApi Dictionary
 	dictionaryApi = CreatePearsonDictionary()
 
-	definitions, err := dictionaryApi.DefineWord(*wordToDefine)
-	if err != nil {
-		log.Fatal(err)
-	}
-	
-	if len(definitions) == 0 {
-		fmt.Println("No definitions found")
-	} else {
-		for index, definition := range definitions {
-			fmt.Println(fmt.Sprintf("%v - %s", index + 1, definition))
+	http.HandleFunc("/api/define", func(w http.ResponseWriter, request *http.Request) {
+		var definitions []string
+		var splitWords []string
+		var jsonObject string
+		wordsWithDefinitions := make(map[string][]string)
+
+		words, err := ioutil.ReadAll(request.Body)
+
+		if err == nil {
+			splitWords = strings.Split(string(words), " ")
 		}
-	}
+
+		if err == nil {
+			for _, word := range splitWords {
+				definitions, err = dictionaryApi.DefineWord(word)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				wordsWithDefinitions[word] = definitions
+			}
+		}
+
+		if err == nil {
+			jsonBytes, err := json.Marshal(wordsWithDefinitions)
+
+			if err == nil {
+				jsonObject = string(jsonBytes)
+			}
+		}
+
+		if err == nil {
+			fmt.Fprintf(w, "%s", jsonObject)
+		}
+		
+		if err != nil {
+			fmt.Fprintf(w, "%q", html.EscapeString(err.Error()))
+		}
+	})
+
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
